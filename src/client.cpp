@@ -20,12 +20,13 @@ void sendData(int clientSocket) {
 // Function for the thread that receive data from the server
 void recieveData(int clientSocket) {
     char buffer[1024];
-    while (!stopThread) {
+    while (true) {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
         if (bytesRead <= 0) {
             std::cerr << "Connection closed by server" << std::endl;
             break;
         }
+        if (stopThread) break; 
         buffer[bytesRead] = '\0';
         std::cout << buffer;
     }
