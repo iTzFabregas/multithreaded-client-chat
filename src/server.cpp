@@ -1,13 +1,4 @@
-#include <iostream>
-#include <cstring>
-#include <cstdlib>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
-#include <thread>
-#include <vector>
+#include "defines.hpp"
 
 std::vector<int> client_sockets;
 
@@ -36,7 +27,7 @@ void handle_client(int clientSocket) {
             break;
         }
         buffer[bytesRead] = '\0';
-        char data[1048];
+        char data[1024];
         sprintf(data, "[ %s ]: %s\n", client_name, buffer);
 
         std::cout << data;
@@ -44,6 +35,9 @@ void handle_client(int clientSocket) {
         // Send the data to all users
         for (int client : client_sockets) {
             if (client != clientSocket) send(client, data, strlen(data), 0);
+            else {
+                if (!strcmp(buffer, "exit")) send(client, data, strlen(data), 0);
+            }
         }
     }
     close(clientSocket);
@@ -60,7 +54,7 @@ int main() {
     // Bind the socket to an address and port
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(12345); // Port number
+    serverAddress.sin_port = htons(PORT); // Port number
     serverAddress.sin_addr.s_addr = INADDR_ANY; // Accept connections on any IP address
 
     if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
@@ -69,7 +63,7 @@ int main() {
     }
 
     // Listen for incoming connections
-    if (listen(serverSocket, 5) == -1) { // Allow up to 5 clients to queue for connection
+    if (listen(serverSocket, MAX_CONNECTIONS) == -1) { // Allow up to 5 clients to queue for connection
         std::cerr << "Error listening on socket" << std::endl;
         return -1;
     }
