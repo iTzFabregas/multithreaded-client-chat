@@ -6,6 +6,28 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include <thread>
+#include <vector>
+
+void handle_client(int clientSocket) {
+    // Send and receive data
+        char buffer[1024];
+        while (true) {
+            int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+            if (bytesRead <= 0) {
+                std::cerr << "Connection closed by client" << std::endl;
+                break;
+            }
+            buffer[bytesRead] = '\0';
+            std::cout << "Received: " << buffer << std::endl;
+
+            // Echo the received data back to the client
+            send(clientSocket, buffer, strlen(buffer), 0);
+        }
+
+        close(clientSocket);
+}
+
 int main() {
     // Create a socket
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -34,35 +56,24 @@ int main() {
     std::cout << "Server listening on port 12345..." << std::endl;
 
 
-    // Accept incoming connections
-    sockaddr_in clientAddress;
-    socklen_t clientAddressSize = sizeof(clientAddress);
+    std::vector<std::thread> threads;
+    while(true) {
+        // Accept incoming connections
+        sockaddr_in clientAddress;
+        socklen_t clientAddressSize = sizeof(clientAddress);
 
-    int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressSize);
-    if (clientSocket == -1) {
-        std::cerr << "Error accepting client connection" << std::endl;
-        return -1;
-    }
-
-    std::cout << "Client connected!" << std::endl;
-
-    // Send and receive data
-    char buffer[1024];
-    while (true) {
-        int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-        if (bytesRead <= 0) {
-            std::cerr << "Connection closed by client" << std::endl;
-            break;
+        int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressSize);
+        if (clientSocket == -1) {
+            std::cerr << "Error accepting client connection" << std::endl;
+            return -1;
         }
-        buffer[bytesRead] = '\0';
-        std::cout << "Received: " << buffer << std::endl;
 
-        // Echo the received data back to the client
-        send(clientSocket, buffer, strlen(buffer), 0);
+        std::cout << "Client connected!" << std::endl;
+
+        threads.emplace_back(handle_client, clientSocket);
     }
 
     // Close sockets
-    close(clientSocket);
     close(serverSocket);
 
     return 0;
