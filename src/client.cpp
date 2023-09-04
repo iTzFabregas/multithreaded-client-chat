@@ -2,6 +2,7 @@
 
 std::atomic<bool> stopThread(false);
 
+// Function for the thread that send data to the server
 void sendData(int clientSocket) {
     char buffer[1024];
     std::cout << "Enter a message ('exit' to close the connection): " << std::endl;
@@ -16,6 +17,7 @@ void sendData(int clientSocket) {
     return;
 }
 
+// Function for the thread that receive data from the server
 void recieveData(int clientSocket) {
     char buffer[1024];
     while (!stopThread) {
@@ -40,8 +42,8 @@ int main() {
     // Connect to the server
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(PORT); // Port number
-    inet_pton(AF_INET, "127.0.0.1", &serverAddress.sin_addr); // Server IP address
+    serverAddress.sin_port = htons(PORT);
+    inet_pton(AF_INET, "127.0.0.1", &serverAddress.sin_addr);
 
     if (connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
         std::cerr << "Error connecting to server" << std::endl;

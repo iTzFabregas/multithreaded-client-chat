@@ -54,8 +54,8 @@ int main() {
     // Bind the socket to an address and port
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(PORT); // Port number
-    serverAddress.sin_addr.s_addr = INADDR_ANY; // Accept connections on any IP address
+    serverAddress.sin_port = htons(PORT);
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
         std::cerr << "Error binding socket" << std::endl;
@@ -63,11 +63,10 @@ int main() {
     }
 
     // Listen for incoming connections
-    if (listen(serverSocket, MAX_CONNECTIONS) == -1) { // Allow up to 5 clients to queue for connection
+    if (listen(serverSocket, MAX_CONNECTIONS) == -1) {
         std::cerr << "Error listening on socket" << std::endl;
         return -1;
     }
-
     std::cout << "Server listening on port 12345..." << std::endl;
 
 
@@ -82,6 +81,7 @@ int main() {
             std::cerr << "Error accepting client connection" << std::endl;
             return -1;
         }
+        // Save the client socket and create a thread for this client
         client_sockets.push_back(clientSocket);
         threads.emplace_back(handle_client, clientSocket);
     }
