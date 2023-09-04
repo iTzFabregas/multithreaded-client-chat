@@ -27,10 +27,31 @@ int main() {
 
     std::cout << "Connected to server" << std::endl;
 
-    // Send and receive data
+    // Send the name
     char buffer[1024];
+    std::cout << "Enter your name ('exit' to close the connection): ";
+    std::cin.getline(buffer, sizeof(buffer));
+
+    send(clientSocket, buffer, strlen(buffer), 0);
+
+    if (strcmp(buffer, "exit") == 0) {
+        close(clientSocket);
+        return -1;
+    }
+
+    int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+    if (bytesRead <= 0) {
+        std::cerr << "Connection closed by server" << std::endl;
+        close(clientSocket);
+        return -1;
+    }
+    //buffer[bytesRead] = '\0';
+    //std::cout << "Received: " << buffer << std::endl;
+
+
+    // Send and receive data
     while (true) {
-        std::cout << "Enter a message: ";
+        std::cout << "Enter a message ('exit' to close the connection): ";
         std::cin.getline(buffer, sizeof(buffer));
 
         send(clientSocket, buffer, strlen(buffer), 0);

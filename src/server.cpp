@@ -10,22 +10,36 @@
 #include <vector>
 
 void handle_client(int clientSocket) {
-    // Send and receive data
-        char buffer[1024];
-        while (true) {
-            int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-            if (bytesRead <= 0) {
-                std::cerr << "Connection closed by client" << std::endl;
-                break;
-            }
-            buffer[bytesRead] = '\0';
-            std::cout << "Received: " << buffer << std::endl;
 
-            // Echo the received data back to the client
-            send(clientSocket, buffer, strlen(buffer), 0);
-        }
 
+    // Receive the name of the new client
+    char buffer[1024];
+    char client_name[16];
+    int bytesRead = recv(clientSocket, client_name, sizeof(client_name), 0);
+    if (bytesRead <= 0) {
+        std::cerr << "Connection closed by client" << std::endl;
         close(clientSocket);
+        return;
+    }
+    client_name[bytesRead] = '\0';
+    std::cout << "New client [ " << client_name << " ] connected!" << std::endl;
+
+    // Echo the received data back to the client
+    send(clientSocket, client_name, strlen(client_name), 0);
+    
+    // Send and receive data
+    while (true) {
+        bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+        if (bytesRead <= 0) {
+            std::cerr << "Connection closed by client" << std::endl;
+            break;
+        }
+        buffer[bytesRead] = '\0';
+        std::cout << "[ "<< client_name << " ]: " << buffer << std::endl;
+
+        send(clientSocket, buffer, strlen(buffer), 0);
+    }
+    close(clientSocket);
 }
 
 int main() {
@@ -67,8 +81,6 @@ int main() {
             std::cerr << "Error accepting client connection" << std::endl;
             return -1;
         }
-
-        std::cout << "Client connected!" << std::endl;
 
         threads.emplace_back(handle_client, clientSocket);
     }
