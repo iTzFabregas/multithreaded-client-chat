@@ -9,8 +9,9 @@
 #include <thread>
 #include <vector>
 
-void handle_client(int clientSocket) {
+std::vector<int> client_sockets;
 
+void handle_client(int clientSocket) {
 
     // Receive the name of the new client
     char buffer[1024];
@@ -35,9 +36,15 @@ void handle_client(int clientSocket) {
             break;
         }
         buffer[bytesRead] = '\0';
-        std::cout << "[ "<< client_name << " ]: " << buffer << std::endl;
+        char data[1048];
+        sprintf(data, "[ %s ]: %s\n", client_name, buffer);
 
-        send(clientSocket, buffer, strlen(buffer), 0);
+        std::cout << data;
+
+        // Send the data to all users
+        for (int client : client_sockets) {
+            if (client != clientSocket) send(client, data, strlen(data), 0);
+        }
     }
     close(clientSocket);
 }
@@ -81,7 +88,7 @@ int main() {
             std::cerr << "Error accepting client connection" << std::endl;
             return -1;
         }
-
+        client_sockets.push_back(clientSocket);
         threads.emplace_back(handle_client, clientSocket);
     }
 

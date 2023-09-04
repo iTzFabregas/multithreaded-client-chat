@@ -6,6 +6,35 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include <thread>
+
+void sendData(int clientSocket) {
+    char buffer[1024];
+    std::cout << "Enter a message ('exit' to close the connection): " << std::endl;
+    while (true) {
+        std::cin.getline(buffer, sizeof(buffer));
+
+        send(clientSocket, buffer, strlen(buffer), 0);
+
+        if (strcmp(buffer, "exit") == 0) {
+            break;
+        }
+    }
+}
+
+void recieveData(int clientSocket) {
+    char buffer[1024];
+    while (true) {
+        int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+        if (bytesRead <= 0) {
+            std::cerr << "Connection closed by server" << std::endl;
+            break;
+        }
+        buffer[bytesRead] = '\0';
+        std::cout << buffer;
+    }
+}
+
 int main() {
     // Create a socket
     int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -31,6 +60,7 @@ int main() {
     char buffer[1024];
     std::cout << "Enter your name ('exit' to close the connection): ";
     std::cin.getline(buffer, sizeof(buffer));
+    std::cout << '\r';
 
     send(clientSocket, buffer, strlen(buffer), 0);
 
@@ -50,24 +80,12 @@ int main() {
 
 
     // Send and receive data
-    while (true) {
-        std::cout << "Enter a message ('exit' to close the connection): ";
-        std::cin.getline(buffer, sizeof(buffer));
+    std::thread sendThread(sendData, clientSocket);
+    // TODO se der exit fechar a aoutra thread
+    std::thread receiveThread(recieveData, clientSocket);
 
-        send(clientSocket, buffer, strlen(buffer), 0);
-
-        if (strcmp(buffer, "exit") == 0) {
-            break;
-        }
-
-        int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-        if (bytesRead <= 0) {
-            std::cerr << "Connection closed by server" << std::endl;
-            break;
-        }
-        buffer[bytesRead] = '\0';
-        std::cout << "Received: " << buffer << std::endl;
-    }
+    sendThread.join();
+    receiveThread.join();
 
     // Close the socket
     close(clientSocket);
