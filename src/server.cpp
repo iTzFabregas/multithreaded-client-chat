@@ -22,8 +22,8 @@ void handle_client(int clientSocket) {
     // Send and receive data
     while (true) {
         bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-        if (bytesRead <= 0) {
-            std::cerr << "Connection closed by client" << std::endl;
+        if (bytesRead <= 0 || !strcmp(buffer, "exit")) {
+            std::cerr << "Connection closed by the client [ " << client_name << " ]" << std::endl;
             break;
         }
         buffer[bytesRead] = '\0';
@@ -67,8 +67,7 @@ int main() {
         std::cerr << "Error listening on socket" << std::endl;
         return -1;
     }
-    std::cout << "Server listening on port 12345..." << std::endl;
-
+    std::cout << "Server listening on port " << PORT << " ..." << std::endl;
 
     std::vector<std::thread> threads;
     while(true) {
@@ -81,6 +80,7 @@ int main() {
             std::cerr << "Error accepting client connection" << std::endl;
             return -1;
         }
+
         // Save the client socket and create a thread for this client
         client_sockets.push_back(clientSocket);
         threads.emplace_back(handle_client, clientSocket);

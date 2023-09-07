@@ -14,7 +14,7 @@ void sendData(int clientSocket) {
             break;
         }
     }
-    return;
+    stopThread.store(true, std::memory_order_release);
 }
 
 // Function for the thread that receive data from the server
@@ -23,13 +23,14 @@ void recieveData(int clientSocket) {
     while (true) {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
         if (bytesRead <= 0) {
-            std::cerr << "Connection closed by server" << std::endl;
+            std::cerr << "Connection closed" << std::endl;
             break;
         }
         if (stopThread) break; 
         buffer[bytesRead] = '\0';
         std::cout << buffer;
     }
+    stopThread.store(true, std::memory_order_release);
 }
 
 int main() {
@@ -72,7 +73,6 @@ int main() {
 
     // Wait the thread to end
     sendThread.join();
-    stopThread.store(true, std::memory_order_release);
     receiveThread.join();
 
     // Close the socket
