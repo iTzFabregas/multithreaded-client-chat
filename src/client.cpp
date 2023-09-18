@@ -5,12 +5,12 @@ std::atomic<bool> stopThread(false);
 // Function for the thread that send data to the server
 void sendData(int clientSocket) {
     char buffer[1024];
-    std::cout << "Enter a message ('exit' to close the connection): " << std::endl;
+    std::cout << "Enter a message ('EXIT' to close the connection): " << std::endl;
     while (true) {
         std::cin.getline(buffer, sizeof(buffer));
         send(clientSocket, buffer, strlen(buffer), 0);
 
-        if (strcmp(buffer, "exit") == 0) {
+        if (strcmp(buffer, "EXIT") == 0) {
             break;
         }
     }

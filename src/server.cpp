@@ -2,6 +2,17 @@
 
 std::vector<int> client_sockets;
 
+void handle_input(int serverSocket) {
+    char buffer[1024];
+    std::cin.getline(buffer, 1024);
+
+	if (strcmp("EXIT", buffer) == 0){
+        for (int client : client_sockets) close(client);
+	    close(serverSocket); 
+	    exit(0);
+	}
+}
+
 void handle_client(int clientSocket) {
 
     // Receive the name of the new client
@@ -68,6 +79,8 @@ int main() {
         return -1;
     }
     std::cout << "Server listening on port " << PORT << " ..." << std::endl;
+
+    std::thread inputThread(handle_input, serverSocket);
 
     std::vector<std::thread> threads;
     while(true) {
