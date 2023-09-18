@@ -4,6 +4,7 @@ std::vector<int> client_sockets;
 
 void handle_input(int serverSocket) {
     char buffer[1024];
+    std::cout << "Digite 'EXIT' para fechar o server" << std::endl;
     std::cin.getline(buffer, 1024);
 
 	if (strcmp("EXIT", buffer) == 0){
