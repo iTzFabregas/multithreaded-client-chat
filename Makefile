@@ -1,3 +1,3 @@
 all:
-	g++ -o server -g -Wall ./src/server.cpp
-	g++ -o client -g -Wall ./src/client.cpp
+	g++ -o server ./src/server.cpp
+	g++ -o client ./src/client.cpp
